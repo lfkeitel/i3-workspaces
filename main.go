@@ -29,7 +29,7 @@ func main() {
 		event := events.Event().(*i3.WorkspaceEvent)
 
 		log.Printf("Received event: %s\n", event.Change)
-		if event.Change != "focus" {
+		if event.Change != "init" {
 			continue
 		}
 
@@ -42,7 +42,7 @@ func main() {
 			continue
 		}
 
-		log.Printf("Received focus for new workspace: %s\n", wsName)
+		log.Printf("Received init for new workspace: %s\n", wsName)
 
 		for _, cmd := range wsConf.Commands {
 			i3.RunCommand(fmt.Sprintf("[con_id=%d] %s", wsID, cmd))
