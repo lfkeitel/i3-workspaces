@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/BurntSushi/toml"
 	"go.i3wm.org/i3/v4"
@@ -11,15 +12,27 @@ import (
 
 var (
 	configFile string
+	sway       bool
 )
 
 func init() {
 	flag.StringVar(&configFile, "c", "config.toml", "Configuration file")
+	flag.BoolVar(&sway, "sway", false, "Use sway instead of i3")
 }
 
 func main() {
 	flag.Parse()
 	conf := readConfig(configFile)
+
+	if sway {
+		i3.SocketPathHook = func() (string, error) {
+			sock, exists := os.LookupEnv("SWAYSOCK")
+			if !exists {
+				return "", fmt.Errorf("SWAYSOCK environment variable not set")
+			}
+			return sock, nil
+		}
+	}
 
 	events := i3.Subscribe(i3.WorkspaceEventType)
 
@@ -48,6 +61,8 @@ func main() {
 			i3.RunCommand(fmt.Sprintf("[con_id=%d] %s", wsID, cmd))
 		}
 	}
+
+	log.Println(events.Close().Error())
 }
 
 type Config map[string]struct {
